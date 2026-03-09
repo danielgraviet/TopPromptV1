@@ -1,24 +1,20 @@
 import Link from 'next/link'
 import { auth, signOut } from '@/auth'
+import { SearchBar } from './search-bar'
 
 export async function Navbar() {
   const session = await auth()
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur">
-      <nav className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold text-white">
+      <nav className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+        <Link href="/" className="shrink-0 text-lg font-bold text-white">
           TopPrompt
         </Link>
 
-        <div className="flex items-center gap-4">
-          <Link
-            href="/explore"
-            className="text-sm text-zinc-400 transition-colors hover:text-white"
-          >
-            Explore
-          </Link>
+        <SearchBar />
 
+        <div className="flex shrink-0 items-center gap-3">
           {session?.user ? (
             <>
               <Link
@@ -28,7 +24,7 @@ export async function Navbar() {
                 Submit
               </Link>
 
-              <div className="flex items-center gap-2">
+              <Link href={`/user/${session.user.id}`} className="flex items-center gap-2">
                 {session.user.image && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -37,8 +33,7 @@ export async function Navbar() {
                     className="h-8 w-8 rounded-full"
                   />
                 )}
-                <span className="text-sm text-zinc-300">{session.user.name}</span>
-              </div>
+              </Link>
 
               <form
                 action={async () => {

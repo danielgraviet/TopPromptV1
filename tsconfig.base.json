@@ -16,7 +16,8 @@
     "paths": {
       "@toprompt/types": ["packages/types/src/index.ts"],
       "@toprompt/ui": ["packages/ui/src/index.ts"],
-      "@toprompt/db": ["packages/db/src/index.ts"]
+      "@toprompt/db": ["packages/db/src/index.ts"],
+      "@toprompt/db/queries": ["packages/db/src/queries.ts"]
     }
   }
 }

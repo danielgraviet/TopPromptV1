@@ -9,3 +9,4 @@ if (!connectionString) {
 export const db = drizzle(neon(connectionString))
 
 export * from './schema'
+export { sql, eq, ne, desc, asc, and, or, inArray, gte, lte, lt, gt, isNull } from 'drizzle-orm'
