@@ -1,0 +1,1 @@
+ALTER TABLE "prompts" ADD COLUMN "flagged" boolean DEFAULT false NOT NULL;

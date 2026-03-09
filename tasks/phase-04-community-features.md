@@ -1,5 +1,5 @@
 # Phase 04 — Community Features
-**Status:** Not started
+**Status:** In progress — code complete, pending Upstash Redis setup for rate limiting + leaderboard cache
 **Depends on:** Phase 03 (core web app)
 **Blocks:** Phase 06 (background jobs — leaderboard recompute needs upvote/save data)
 

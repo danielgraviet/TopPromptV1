@@ -1,5 +1,5 @@
 # Phase 03 — Core Web App
-**Status:** Not started
+**Status:** Complete
 **Depends on:** Phase 01 (scaffold), Phase 02 (database + auth)
 **Blocks:** Phase 04 (community features), Phase 07 (SEO)
 

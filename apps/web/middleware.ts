@@ -1,7 +1,7 @@
 import { auth } from '@/auth'
 import { NextResponse } from 'next/server'
 
-const PROTECTED_PATHS = ['/submit', '/profile']
+const PROTECTED_PATHS = ['/submit', '/saved', '/profile']
 
 export default auth((req) => {
   const isProtected = PROTECTED_PATHS.some((path) =>

@@ -1,6 +1,6 @@
-import { eq, desc, inArray, sql, gte } from 'drizzle-orm'
+import { eq, desc, inArray, sql, gte, and } from 'drizzle-orm'
 import { db } from './index'
-import { prompts, users, promptTags, promptModels } from './schema'
+import { prompts, users, promptTags, promptModels, saves, comments } from './schema'
 
 // ─── Shared types ─────────────────────────────────────────────────────────────
 
@@ -68,11 +68,14 @@ async function withMeta<T extends { id: string }>(
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
+const notFlagged = eq(prompts.flagged, false)
+
 export async function getPromptFeed(limit = 20): Promise<PromptSummary[]> {
   const rows = await db
     .select(summarySelect)
     .from(prompts)
     .leftJoin(users, eq(prompts.creatorId, users.id))
+    .where(notFlagged)
     .orderBy(desc(prompts.score))
     .limit(limit)
   return withMeta(rows)
@@ -84,7 +87,7 @@ export async function getTrendingPrompts(limit = 20): Promise<PromptSummary[]> {
     .select(summarySelect)
     .from(prompts)
     .leftJoin(users, eq(prompts.creatorId, users.id))
-    .where(gte(prompts.createdAt, oneDayAgo))
+    .where(and(notFlagged, gte(prompts.createdAt, oneDayAgo)))
     .orderBy(desc(prompts.score))
     .limit(limit)
   return withMeta(rows)
@@ -98,10 +101,66 @@ export async function getPromptsByCategory(
     .select(summarySelect)
     .from(prompts)
     .leftJoin(users, eq(prompts.creatorId, users.id))
-    .where(eq(prompts.category, category))
+    .where(and(notFlagged, eq(prompts.category, category)))
     .orderBy(desc(prompts.score))
     .limit(limit)
   return withMeta(rows)
+}
+
+export async function getLeaderboard(
+  period: 'week' | 'today' | 'alltime',
+  limit = 50
+): Promise<PromptSummary[]> {
+  const now = Date.now()
+  const since =
+    period === 'today'
+      ? new Date(now - 24 * 60 * 60 * 1000)
+      : period === 'week'
+      ? new Date(now - 7 * 24 * 60 * 60 * 1000)
+      : null
+
+  const rows = await db
+    .select(summarySelect)
+    .from(prompts)
+    .leftJoin(users, eq(prompts.creatorId, users.id))
+    .where(since ? and(notFlagged, gte(prompts.createdAt, since)) : notFlagged)
+    .orderBy(desc(prompts.score))
+    .limit(limit)
+  return withMeta(rows)
+}
+
+export async function getSavedPrompts(userId: string): Promise<PromptSummary[]> {
+  const savedRows = await db
+    .select({ promptId: saves.promptId })
+    .from(saves)
+    .where(eq(saves.userId, userId))
+    .orderBy(desc(saves.createdAt))
+
+  if (savedRows.length === 0) return []
+  const ids = savedRows.map((r) => r.promptId)
+
+  const rows = await db
+    .select(summarySelect)
+    .from(prompts)
+    .leftJoin(users, eq(prompts.creatorId, users.id))
+    .where(inArray(prompts.id, ids))
+  return withMeta(rows)
+}
+
+export async function getComments(promptId: string) {
+  return db
+    .select({
+      id: comments.id,
+      body: comments.body,
+      createdAt: comments.createdAt,
+      userId: comments.userId,
+      userName: users.name,
+      userImage: users.image,
+    })
+    .from(comments)
+    .leftJoin(users, eq(comments.userId, users.id))
+    .where(eq(comments.promptId, promptId))
+    .orderBy(desc(comments.createdAt))
 }
 
 export async function searchPrompts(query: string, limit = 20): Promise<PromptSummary[]> {

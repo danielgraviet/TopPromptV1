@@ -15,8 +15,15 @@ export async function Navbar() {
         <SearchBar />
 
         <div className="flex shrink-0 items-center gap-3">
+          <Link href="/leaderboard" className="hidden text-sm text-zinc-400 transition-colors hover:text-white sm:block">
+            Leaderboard
+          </Link>
+
           {session?.user ? (
             <>
+              <Link href="/saved" className="hidden text-sm text-zinc-400 transition-colors hover:text-white sm:block">
+                Saved
+              </Link>
               <Link
                 href="/submit"
                 className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
