@@ -1,0 +1,21 @@
+# Node
+node_modules
+.pnpm-store
+.turbo
+
+# Next.js
+.next
+
+# Build outputs
+dist
+build
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python leftovers
+.venv
+__pycache__/
+*.pyc
