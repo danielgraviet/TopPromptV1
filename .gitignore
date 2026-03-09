@@ -10,6 +10,13 @@ node_modules
 dist
 build
 
+# Plasmo extension cache
+.plasmo/cache
+.plasmo/gen-assets
+
+# TypeScript build info
+*.tsbuildinfo
+
 # Environment
 .env
 .env.local
