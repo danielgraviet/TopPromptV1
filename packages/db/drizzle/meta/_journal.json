@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1773029735700,
+      "tag": "0000_futuristic_magus",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773032386200,
+      "tag": "0001_open_kulan_gath",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773032916268,
+      "tag": "0002_broad_xorn",
+      "breakpoints": true
+    }
+  ]
+}
