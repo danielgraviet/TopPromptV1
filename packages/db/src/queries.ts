@@ -6,6 +6,7 @@ import { prompts, users, promptTags, promptModels, saves, comments } from './sch
 
 export type PromptSummary = {
   id: string
+  slug: string
   title: string
   description: string
   category: string
@@ -25,12 +26,14 @@ export type PromptDetail = PromptSummary & {
   promptText: string
   sourceUrl: string | null
   commentCount: number
+  updatedAt: Date
 }
 
 // ─── Shared select shape ──────────────────────────────────────────────────────
 
 const summarySelect = {
   id: prompts.id,
+  slug: prompts.slug,
   title: prompts.title,
   description: prompts.description,
   category: prompts.category,
@@ -195,6 +198,7 @@ export async function getPromptById(id: string): Promise<PromptDetail | null> {
       promptText: prompts.promptText,
       sourceUrl: prompts.sourceUrl,
       commentCount: prompts.commentCount,
+      updatedAt: prompts.updatedAt,
     })
     .from(prompts)
     .leftJoin(users, eq(prompts.creatorId, users.id))
@@ -209,6 +213,33 @@ export async function getPromptById(id: string): Promise<PromptDetail | null> {
     promptText: rows[0].promptText,
     sourceUrl: rows[0].sourceUrl,
     commentCount: rows[0].commentCount,
+    updatedAt: rows[0].updatedAt,
+  }
+}
+
+export async function getPromptBySlug(slug: string): Promise<PromptDetail | null> {
+  const rows = await db
+    .select({
+      ...summarySelect,
+      promptText: prompts.promptText,
+      sourceUrl: prompts.sourceUrl,
+      commentCount: prompts.commentCount,
+      updatedAt: prompts.updatedAt,
+    })
+    .from(prompts)
+    .leftJoin(users, eq(prompts.creatorId, users.id))
+    .where(eq(prompts.slug, slug))
+    .limit(1)
+
+  if (rows.length === 0) return null
+
+  const [row] = await withMeta(rows)
+  return {
+    ...row,
+    promptText: rows[0].promptText,
+    sourceUrl: rows[0].sourceUrl,
+    commentCount: rows[0].commentCount,
+    updatedAt: rows[0].updatedAt,
   }
 }
 

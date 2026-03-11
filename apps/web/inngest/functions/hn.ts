@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 import { db, prompts, eq, BOT_USER_ID, seedBotUser } from '@toprompt/db'
 import { inngest } from '../client'
 import { inferCategory } from '../helpers'
+import { generateSlug } from '../../lib/slug'
 
 const HN_QUERIES = [
   'prompt engineering',
@@ -46,8 +47,10 @@ export const aggregateHN = inngest.createFunction(
           const promptText = hit.story_text ?? hit.title
           if (!promptText || promptText.length < 20) continue
 
+          const id = nanoid()
           await db.insert(prompts).values({
-            id: nanoid(),
+            id,
+            slug: generateSlug(hit.title, id),
             title: hit.title.slice(0, 200),
             description: `From Hacker News — ${hit.points ?? 0} points`,
             promptText: promptText.slice(0, 20000),

@@ -58,7 +58,7 @@ export const notifyFollowers = inngest.createFunction(
             <h2>New prompt from a creator you follow</h2>
             <h3>${prompt.title}</h3>
             <p>${prompt.description}</p>
-            <a href="https://topprompt.io/prompt/${prompt.id}">View prompt</a>
+            <a href="https://topprompt.io/prompt/${prompt.slug}">View prompt</a>
           `,
         })
       })

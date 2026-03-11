@@ -78,6 +78,7 @@ export const prompts = pgTable(
   'prompts',
   {
     id: text('id').primaryKey(),
+    slug: text('slug').notNull().unique(),
     title: text('title').notNull(),
     description: text('description').notNull(),
     promptText: text('prompt_text').notNull(),
@@ -100,6 +101,7 @@ export const prompts = pgTable(
     categoryIdx: index('prompts_category_idx').on(t.category),
     scoreIdx: index('prompts_score_idx').on(t.score),
     creatorIdx: index('prompts_creator_idx').on(t.creatorId),
+    slugIdx: index('prompts_slug_idx').on(t.slug),
   })
 )
 

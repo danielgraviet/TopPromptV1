@@ -1,9 +1,16 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { PromptCard } from '@/components/prompt-card'
 import { CATEGORIES } from '@/lib/categories'
 import { getServerCaller } from '@/server/caller'
 
 export const revalidate = 300
+
+export const metadata: Metadata = {
+  title: 'TopPrompt — The Developer Prompt Library',
+  description: 'Discover and share the best AI prompts for developers. Community-ranked prompts for Claude, GPT-4o, and more.',
+  alternates: { canonical: 'https://topprompt.io' },
+}
 
 export default async function HomePage({
   searchParams,

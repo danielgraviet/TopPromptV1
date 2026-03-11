@@ -1,9 +1,22 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { PromptCard } from '@/components/prompt-card'
 import { CATEGORY_SLUGS, getCategoryBySlug } from '@/lib/categories'
 import { getServerCaller } from '@/server/caller'
 
 export const revalidate = 600
+
+export async function generateMetadata({ params }: { params: { category: string } }): Promise<Metadata> {
+  const category = getCategoryBySlug(params.category)
+  if (!category) return {}
+  return {
+    title: `Best ${category.label} AI Prompts`,
+    description: `Discover community-ranked AI prompts for ${category.label.toLowerCase()}. ${category.description}`,
+    alternates: {
+      canonical: `https://topprompt.io/category/${params.category}`,
+    },
+  }
+}
 
 export async function generateStaticParams() {
   return CATEGORY_SLUGS.map((slug) => ({ category: slug }))

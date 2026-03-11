@@ -15,7 +15,7 @@ export default function SubmitPage() {
   const createPrompt = trpc.prompts.create.useMutation({
     onSuccess: (data) => {
       toast.success('Prompt submitted!')
-      router.push(`/prompt/${data.id}`)
+      router.push(`/prompt/${data.slug}`)
     },
     onError: (err) => {
       toast.error(err.message)

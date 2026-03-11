@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 import { db, prompts, eq, BOT_USER_ID, seedBotUser } from '@toprompt/db'
 import { inngest } from '../client'
 import { inferCategory, extractPromptFromPost } from '../helpers'
+import { generateSlug } from '../../lib/slug'
 
 const SUBREDDITS = [
   { name: 'ChatGPT', query: 'prompt' },
@@ -52,8 +53,10 @@ export const aggregateReddit = inngest.createFunction(
           const promptText = extractPromptFromPost(post.selftext)
           if (!promptText) continue
 
+          const id = nanoid()
           await db.insert(prompts).values({
-            id: nanoid(),
+            id,
+            slug: generateSlug(post.title, id),
             title: post.title.slice(0, 200),
             description: post.selftext.slice(0, 500),
             promptText,

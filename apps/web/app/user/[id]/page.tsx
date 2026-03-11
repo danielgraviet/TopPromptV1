@@ -1,11 +1,25 @@
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
 import { getCreatorById, getPromptsByCreator } from '@toprompt/db/queries'
 import { auth } from '@/auth'
 import { db, follows, eq, and, sql } from '@toprompt/db'
 import { PromptCard } from '@/components/prompt-card'
 import { FollowButton } from '@/components/follow-button'
 
-export const revalidate = 60
+export const revalidate = 300
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const creator = await getCreatorById(params.id)
+  if (!creator) return {}
+  const name = creator.name ?? creator.username ?? 'Anonymous'
+  return {
+    title: `${name}'s AI Prompts`,
+    description: `Browse AI prompts by ${name} on TopPrompt.`,
+    alternates: {
+      canonical: `https://topprompt.io/user/${params.id}`,
+    },
+  }
+}
 
 export default async function CreatorPage({ params }: { params: { id: string } }) {
   const [creator, prompts, session] = await Promise.all([

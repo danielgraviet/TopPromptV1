@@ -31,7 +31,7 @@ export function PromptCard({ prompt }: { prompt: PromptSummary }) {
   return (
     <article className="group relative rounded-xl border border-zinc-800 bg-zinc-900 p-5 transition-colors hover:border-zinc-600">
       {/* Stretched link covers the whole card */}
-      <Link href={`/prompt/${prompt.id}`} className="absolute inset-0 rounded-xl" aria-label={prompt.title} />
+      <Link href={`/prompt/${prompt.slug}`} className="absolute inset-0 rounded-xl" aria-label={prompt.title} />
 
       <div className="mb-3 flex items-start justify-between gap-3">
         <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${categoryColor}`}>

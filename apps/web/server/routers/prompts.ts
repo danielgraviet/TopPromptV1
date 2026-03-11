@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
 import { router, publicProcedure, protectedProcedure } from '../trpc'
 import { inngest } from '../../inngest/client'
+import { generateSlug } from '../../lib/slug'
 import {
   getPromptFeed,
   getTrendingPrompts,
@@ -66,9 +67,11 @@ export const promptsRouter = router({
     .mutation(async ({ input, ctx }) => {
       const id = nanoid()
       const creatorId = ctx.user.id as string
+      const slug = generateSlug(input.title, id)
 
       await db.insert(prompts).values({
         id,
+        slug,
         title: input.title,
         description: input.description,
         promptText: input.promptText,
@@ -94,6 +97,6 @@ export const promptsRouter = router({
 
       await inngest.send({ name: 'prompt/published', data: { promptId: id, creatorId } })
 
-      return { id }
+      return { id, slug }
     }),
 })
