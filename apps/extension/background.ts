@@ -11,6 +11,15 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 })
 
+// Global keyboard shortcut (Alt+Shift+P) — open the side panel in the active tab.
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command !== 'open-side-panel') return
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  if (tab?.id) {
+    await chrome.sidePanel.open({ tabId: tab.id })
+  }
+})
+
 // OAuth callback — when the extension-callback page finishes loading,
 // read the user identity from meta tags, save to storage, close the tab.
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {

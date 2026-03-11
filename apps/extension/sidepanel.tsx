@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { api } from './lib/api'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-// Mirrors PromptSummary from packages/db/src/queries — inlined here to avoid
-// pulling server-side DB imports into the extension bundle.
 type PromptSummary = {
   id: string
   title: string
@@ -138,12 +136,13 @@ const s = {
     flexDirection: 'column' as const,
     gap: 6,
   },
-  card: {
-    background: '#18181b',
-    border: '1px solid #27272a',
+  card: (focused: boolean) => ({
+    background: focused ? '#27272a' : '#18181b',
+    border: `1px solid ${focused ? '#4338ca' : '#27272a'}`,
     borderRadius: 10,
     padding: '10px 12px',
-  },
+    transition: 'border-color 0.1s, background 0.1s',
+  }),
   cardTitle: { fontWeight: 600, fontSize: 13, color: '#fff', marginBottom: 3 },
   cardDesc: {
     fontSize: 12,
@@ -163,7 +162,7 @@ const s = {
     background: '#27272a',
     color: '#71717a',
   },
-  actions: { display: 'flex' as const, gap: 6 },
+  actions: { display: 'flex' as const, gap: 6, alignItems: 'center' as const },
   insertBtn: {
     flex: 1,
     padding: '5px 0',
@@ -184,6 +183,12 @@ const s = {
     color: '#a1a1aa',
     fontSize: 12,
     cursor: 'pointer' as const,
+  },
+  hint: {
+    fontSize: 10,
+    color: '#3f3f46',
+    marginLeft: 'auto' as const,
+    whiteSpace: 'nowrap' as const,
   },
   empty: {
     padding: '40px 20px',
@@ -225,6 +230,13 @@ function useToast() {
   return { message, visible, show }
 }
 
+// ─── PromptCard imperative handle ─────────────────────────────────────────────
+
+type PromptCardHandle = {
+  insert: () => Promise<void>
+  copy: () => Promise<void>
+}
+
 // ─── Popup component ──────────────────────────────────────────────────────────
 
 function IndexSidePanel() {
@@ -234,7 +246,94 @@ function IndexSidePanel() {
   const [category, setCategory] = useState('all')
   const [prompts, setPrompts] = useState<PromptSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [focusedIndex, setFocusedIndex] = useState(-1)
   const toast = useToast()
+
+  const searchRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  const cardHandles = useRef<(PromptCardHandle | null)[]>([])
+  const stateRef = useRef({ focusedIndex, prompts })
+
+  // Keep stateRef in sync so keydown handler never captures stale values
+  useEffect(() => {
+    stateRef.current = { focusedIndex, prompts }
+  })
+
+  // ── Auto-focus search on mount ──
+  useEffect(() => {
+    searchRef.current?.focus()
+  }, [])
+
+  // ── Reset focused card when prompt list changes ──
+  useEffect(() => {
+    setFocusedIndex(-1)
+  }, [prompts])
+
+  // ── Scroll focused card into view ──
+  useEffect(() => {
+    if (focusedIndex < 0) return
+    const listEl = listRef.current
+    if (!listEl) return
+    const cards = listEl.querySelectorAll<HTMLElement>('[data-card]')
+    cards[focusedIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [focusedIndex])
+
+  // ── Global keydown handler (stable ref pattern avoids stale closure) ──
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const { focusedIndex, prompts } = stateRef.current
+      const tag = (e.target as HTMLElement).tagName
+
+      // ↓ / ↑ — navigate list (works from anywhere)
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setFocusedIndex((i) => Math.min(i + 1, prompts.length - 1))
+        return
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setFocusedIndex((i) => {
+          if (i <= 0) {
+            searchRef.current?.focus()
+            return -1
+          }
+          return i - 1
+        })
+        return
+      }
+
+      // Esc — clear search and return focus to search box
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setSearch('')
+        setFocusedIndex(-1)
+        searchRef.current?.focus()
+        return
+      }
+
+      // Enter / Cmd+Enter — only when a card is focused
+      if (focusedIndex < 0) return
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        if (e.metaKey || e.ctrlKey) {
+          void cardHandles.current[focusedIndex]?.copy()
+        } else {
+          void cardHandles.current[focusedIndex]?.insert()
+        }
+        return
+      }
+
+      // / — jump to search from list
+      if (e.key === '/' && tag !== 'INPUT') {
+        e.preventDefault()
+        setFocusedIndex(-1)
+        searchRef.current?.focus()
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   // ── Load auth state on mount + listen for changes from background ──
   useEffect(() => {
@@ -276,7 +375,7 @@ function IndexSidePanel() {
         } else if (category !== 'all') {
           results = await api.prompts.byCategory.query({ category, limit: 20 })
         } else {
-          results = await api.prompts.trending.query({ limit: 20 })
+          results = await api.prompts.list.query({ limit: 20 })
         }
 
         if (!cancelled) setPrompts(results)
@@ -296,7 +395,8 @@ function IndexSidePanel() {
   // ── Actions ──
 
   async function handleSignIn() {
-    chrome.tabs.create({ url: 'https://topprompt.dev/auth/extension-callback' })
+    const base = process.env.PLASMO_PUBLIC_WEB_URL ?? 'https://topprompt.dev'
+    chrome.tabs.create({ url: `${base}/auth/extension-callback` })
   }
 
   async function handleSignOut() {
@@ -379,12 +479,21 @@ function IndexSidePanel() {
       {activeTab === 'trending' && (
         <div style={s.searchWrap}>
           <input
+            ref={searchRef}
             style={s.searchInput}
-            placeholder="Search prompts…"
+            placeholder="Search prompts… (/ to focus)"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
               setCategory('all')
+            }}
+            onKeyDown={(e) => {
+              // Let ↓ from the search box move focus to first card
+              if (e.key === 'ArrowDown') {
+                e.preventDefault()
+                setFocusedIndex(0)
+                ;(e.target as HTMLInputElement).blur()
+              }
             }}
           />
         </div>
@@ -405,8 +514,13 @@ function IndexSidePanel() {
         </div>
       )}
 
+      {/* Keyboard hint */}
+      <div style={{ padding: '4px 14px 0', display: 'flex', gap: 10 }}>
+        <span style={{ fontSize: 10, color: '#3f3f46' }}>↓↑ navigate · Enter insert · ⌘Enter copy · Esc clear</span>
+      </div>
+
       {/* Prompt list */}
-      <div style={s.list}>
+      <div ref={listRef} style={s.list}>
         {loading ? (
           <div style={s.empty}>Loading…</div>
         ) : prompts.length === 0 ? (
@@ -414,12 +528,15 @@ function IndexSidePanel() {
             {activeTab === 'saved' ? 'No saved prompts yet.' : 'No prompts found.'}
           </div>
         ) : (
-          prompts.map((prompt) => (
+          prompts.map((prompt, i) => (
             <PromptCard
               key={prompt.id}
+              ref={(el) => { cardHandles.current[i] = el }}
               prompt={prompt}
+              focused={focusedIndex === i}
               onInsert={handleInsert}
               onCopy={handleCopy}
+              onFocus={() => setFocusedIndex(i)}
             />
           ))
         )}
@@ -433,17 +550,16 @@ function IndexSidePanel() {
 
 // ─── Prompt card ──────────────────────────────────────────────────────────────
 
-function PromptCard({
-  prompt,
-  onInsert,
-  onCopy,
-}: {
-  prompt: PromptSummary
-  onInsert: (text: string) => void
-  onCopy: (text: string) => void
-}) {
-  // PromptSummary doesn't include promptText — fetch it on demand when
-  // the user clicks Insert or Copy so the list stays fast to load.
+const PromptCard = forwardRef<
+  PromptCardHandle,
+  {
+    prompt: PromptSummary
+    focused: boolean
+    onInsert: (text: string) => void
+    onCopy: (text: string) => void
+    onFocus: () => void
+  }
+>(function PromptCard({ prompt, focused, onInsert, onCopy, onFocus }, ref) {
   const [promptText, setPromptText] = useState<string | null>(null)
   const [fetching, setFetching] = useState(false)
 
@@ -460,8 +576,19 @@ function PromptCard({
     }
   }
 
+  useImperativeHandle(ref, () => ({
+    insert: async () => {
+      const text = await getPromptText()
+      if (text) onInsert(text)
+    },
+    copy: async () => {
+      const text = await getPromptText()
+      if (text) onCopy(text)
+    },
+  }))
+
   return (
-    <div style={s.card}>
+    <div data-card style={s.card(focused)} onMouseEnter={onFocus}>
       <div style={s.cardTitle}>{prompt.title}</div>
       <div style={s.cardDesc}>{prompt.description}</div>
 
@@ -496,9 +623,10 @@ function PromptCard({
         >
           Copy
         </button>
+        {focused && <span style={s.hint}>↵ insert · ⌘↵ copy</span>}
       </div>
     </div>
   )
-}
+})
 
 export default IndexSidePanel

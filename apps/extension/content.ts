@@ -32,23 +32,28 @@ function insertPrompt(text: string): boolean {
 
   if (!editor) return false
 
-  if (editor instanceof HTMLTextAreaElement) {
-    editor.value = text
-    editor.dispatchEvent(new Event('input', { bubbles: true }))
-    editor.focus()
-  } else {
-    // contenteditable div (Claude, ChatGPT, Gemini)
-    editor.textContent = text
-    editor.dispatchEvent(new InputEvent('input', { bubbles: true }))
+  editor.focus()
 
-    // Move cursor to end so the user can keep typing
+  if (editor instanceof HTMLTextAreaElement) {
+    // Plain textarea — set value directly and fire native input event
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      'value'
+    )?.set
+    nativeInputValueSetter?.call(editor, text)
+    editor.dispatchEvent(new Event('input', { bubbles: true }))
+  } else {
+    // contenteditable (Claude/ProseMirror, ChatGPT, Gemini)
+    // Select all existing content then replace via execCommand so the
+    // editor's own state manager (ProseMirror, Quill, etc.) sees the change.
+    const sel = window.getSelection()
     const range = document.createRange()
     range.selectNodeContents(editor)
-    range.collapse(false)
-    const sel = window.getSelection()
     sel?.removeAllRanges()
     sel?.addRange(range)
-    editor.focus()
+    // execCommand is deprecated but remains the most reliable way to
+    // trigger framework-managed contenteditable editors in Chrome.
+    document.execCommand('insertText', false, text)
   }
 
   return true

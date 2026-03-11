@@ -44,6 +44,16 @@
     "https://chat.openai.com/*",
     "https://chatgpt.com/*",
     "https://gemini.google.com/*",
-    "https://topprompt.dev/*"
-  ]
+    "https://topprompt.dev/*",
+    "http://localhost/*"
+  ],
+  "commands": {
+    "open-side-panel": {
+      "suggested_key": {
+        "default": "Alt+Shift+P",
+        "mac": "Alt+Shift+P"
+      },
+      "description": "Open TopPrompt side panel"
+    }
+  }
 }
