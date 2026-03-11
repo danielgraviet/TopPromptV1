@@ -10,7 +10,6 @@ import {
   getPromptById,
   getPromptsByCreator,
   getCreatorById,
-  getLeaderboard,
 } from '@toprompt/db/queries'
 import { db, prompts, promptTags, promptModels } from '@toprompt/db'
 import { CATEGORY_SLUGS, AI_MODELS } from '../../lib/categories'
@@ -57,16 +56,8 @@ export const promptsRouter = router({
   leaderboard: publicProcedure
     .input(z.object({ period: z.enum(['week', 'today', 'alltime']).default('week'), limit: z.number().min(1).max(50).default(50) }))
     .query(async ({ input }) => {
-      const { redis } = await import('../../lib/redis')
-      if (redis) {
-        const cacheKey = `leaderboard:${input.period}`
-        const cached = await redis.get(cacheKey)
-        if (cached) return cached as Awaited<ReturnType<typeof getLeaderboard>>
-        const results = await getLeaderboard(input.period, input.limit)
-        await redis.set(cacheKey, results, { ex: 300 })
-        return results
-      }
-      return getLeaderboard(input.period, input.limit)
+      const { getCachedLeaderboard } = await import('../../lib/leaderboard-cache')
+      return getCachedLeaderboard(input.period, input.limit)
     }),
 
   create: protectedProcedure

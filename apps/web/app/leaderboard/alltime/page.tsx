@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import { getLeaderboard } from '@toprompt/db/queries'
+import { getCachedLeaderboard } from '@/lib/leaderboard-cache'
 import { PromptCard } from '@/components/prompt-card'
 
 export const revalidate = 600
 
 export default async function AllTimeLeaderboardPage() {
-  const prompts = await getLeaderboard('alltime')
+  const prompts = await getCachedLeaderboard('alltime')
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10">

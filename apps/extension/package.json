@@ -10,20 +10,36 @@
   },
   "dependencies": {
     "@toprompt/types": "workspace:*",
-    "@toprompt/ui": "workspace:*",
+    "@trpc/client": "^11.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "plasmo": "^0.90.5",
-    "@types/chrome": "^0.0.284"
+    "@types/chrome": "^0.0.284",
+    "plasmo": "^0.90.5"
   },
   "manifest": {
     "manifest_version": 3,
     "name": "TopPrompt",
-    "description": "TopPrompt browser extension",
-    "version": "0.0.1",
-    "permissions": ["activeTab", "storage"],
+    "description": "Insert your best AI prompts directly into Claude, ChatGPT, and more.",
+    "version": "0.1.0",
+    "permissions": [
+      "activeTab",
+      "storage",
+      "tabs",
+      "scripting",
+      "sidePanel"
+    ],
+    "side_panel": {
+      "default_path": "sidepanel.html"
+    },
+    "host_permissions": [
+      "https://claude.ai/*",
+      "https://chat.openai.com/*",
+      "https://chatgpt.com/*",
+      "https://gemini.google.com/*",
+      "https://topprompt.dev/*"
+    ],
     "action": {
       "default_title": "TopPrompt"
     }

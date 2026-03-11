@@ -28,10 +28,14 @@ export function CommentSection({
   promptId,
   initialComments,
   currentUserId,
+  currentUserName,
+  currentUserImage,
 }: {
   promptId: string
   initialComments: Comment[]
   currentUserId?: string
+  currentUserName?: string | null
+  currentUserImage?: string | null
 }) {
   const router = useRouter()
   const [comments, setComments] = useState(initialComments)
@@ -40,12 +44,28 @@ export function CommentSection({
   const utils = trpc.useUtils()
 
   const createComment = trpc.comments.create.useMutation({
-    onSuccess: async () => {
+    onMutate: () => {
+      // Optimistic: add the comment immediately
+      const tempComment: Comment = {
+        id: `temp-${Date.now()}`,
+        body: body.trim(),
+        createdAt: new Date().toISOString(),
+        userId: currentUserId!,
+        userName: currentUserName ?? null,
+        userImage: currentUserImage ?? null,
+      }
+      setComments((prev) => [...prev, tempComment])
       setBody('')
+    },
+    onSuccess: async () => {
+      // Replace optimistic comment with real data (gets real ID for deletion)
       const fresh = await utils.comments.list.fetch({ promptId })
       setComments(fresh as unknown as Comment[])
     },
     onError: (err) => {
+      // Revert optimistic comment
+      setComments((prev) => prev.filter((c) => !c.id.startsWith('temp-')))
+      setBody(body)
       if (err.data?.code === 'UNAUTHORIZED') router.push('/login')
       else toast.error(err.message)
     },
@@ -119,7 +139,7 @@ export function CommentSection({
                     {timeAgo(new Date(comment.createdAt))}
                   </span>
                 </div>
-                {currentUserId === comment.userId && (
+                {currentUserId === comment.userId && !comment.id.startsWith('temp-') && (
                   <button
                     onClick={() => deleteComment.mutate({ commentId: comment.id, promptId })}
                     className="text-xs text-zinc-600 hover:text-red-400"

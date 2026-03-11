@@ -115,7 +115,13 @@ export default async function PromptPage({ params }: { params: { id: string } })
         </pre>
       </div>
 
-      <CommentSection promptId={prompt.id} initialComments={initialComments} currentUserId={userId} />
+      <CommentSection
+        promptId={prompt.id}
+        initialComments={initialComments}
+        currentUserId={userId}
+        currentUserName={session?.user?.name}
+        currentUserImage={session?.user?.image}
+      />
     </main>
   )
 }
