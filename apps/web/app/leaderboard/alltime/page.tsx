@@ -1,8 +1,15 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { getCachedLeaderboard } from '@/lib/leaderboard-cache'
 import { PromptCard } from '@/components/prompt-card'
 
-export const revalidate = 600
+export const revalidate = 300
+
+export const metadata: Metadata = {
+  title: 'All-Time Best AI Prompts',
+  description: 'Highest-scoring AI prompts ever on TopPrompt.',
+  alternates: { canonical: 'https://topprompt.io/leaderboard/alltime' },
+}
 
 export default async function AllTimeLeaderboardPage() {
   const prompts = await getCachedLeaderboard('alltime')

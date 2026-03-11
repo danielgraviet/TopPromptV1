@@ -1,8 +1,15 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { getCachedLeaderboard } from '@/lib/leaderboard-cache'
 import { PromptCard } from '@/components/prompt-card'
 
-export const revalidate = 60
+export const revalidate = 300
+
+export const metadata: Metadata = {
+  title: 'Today\'s Top AI Prompts',
+  description: 'Top community-ranked AI prompts from the last 24 hours on TopPrompt.',
+  alternates: { canonical: 'https://topprompt.io/leaderboard/today' },
+}
 
 export default async function TodayLeaderboardPage() {
   const prompts = await getCachedLeaderboard('today')

@@ -1,4 +1,4 @@
-import { eq, desc, inArray, sql, gte, and } from 'drizzle-orm'
+import { eq, desc, inArray, sql, gte, and, or } from 'drizzle-orm'
 import { db } from './index'
 import { prompts, users, promptTags, promptModels, saves, comments } from './schema'
 
@@ -228,7 +228,7 @@ export async function getPromptBySlug(slug: string): Promise<PromptDetail | null
     })
     .from(prompts)
     .leftJoin(users, eq(prompts.creatorId, users.id))
-    .where(eq(prompts.slug, slug))
+    .where(or(eq(prompts.slug, slug), eq(prompts.id, slug)))
     .limit(1)
 
   if (rows.length === 0) return null

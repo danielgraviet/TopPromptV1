@@ -5,14 +5,18 @@ module.exports = {
   exclude: ['/api/*', '/saved', '/submit', '/login', '/auth/*'],
   robotsTxtOptions: {
     policies: [
-      { userAgent: '*', allow: '/' },
-      { userAgent: '*', disallow: ['/api/', '/saved', '/submit', '/login'] },
+      { userAgent: '*', allow: '/', disallow: ['/api/', '/saved', '/submit', '/login'] },
     ],
   },
   additionalPaths: async () => {
     // Dynamically add all prompt pages to the sitemap
+    const dbUrl = process.env.DATABASE_URL || process.env.DATABASE_URL_POOLED
+    if (!dbUrl) {
+      console.warn('next-sitemap: DATABASE_URL not set, skipping dynamic prompt paths')
+      return []
+    }
     const { neon } = require('@neondatabase/serverless')
-    const sql = neon(process.env.DATABASE_URL)
+    const sql = neon(dbUrl)
 
     const rows = await sql`
       SELECT slug, updated_at FROM prompts
