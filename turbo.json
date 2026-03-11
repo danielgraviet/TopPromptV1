@@ -9,6 +9,10 @@
       "cache": false,
       "persistent": true
     },
+    "inngest": {
+      "cache": false,
+      "persistent": true
+    },
     "lint": {
       "outputs": []
     },

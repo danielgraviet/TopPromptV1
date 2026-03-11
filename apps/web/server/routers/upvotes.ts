@@ -5,6 +5,7 @@ import { router, publicProcedure, protectedProcedure } from '../trpc'
 import { db, upvotes, prompts, eq, and, sql, gte } from '@toprompt/db'
 import { recomputeScore } from '../../lib/score'
 import { upvoteRatelimit } from '../../lib/ratelimit'
+import { inngest } from '../../inngest/client'
 
 export const upvotesRouter = router({
   toggle: protectedProcedure
@@ -55,6 +56,11 @@ export const upvotesRouter = router({
         result.prompt.commentCount,
         result.prompt.createdAt
       )
+
+      // Emit event for Inngest (used by vote anomaly detection and analytics)
+      if (result.upvoted) {
+        await inngest.send({ name: 'upvote/created', data: { promptId: input.promptId, userId } })
+      }
 
       // Vote anomaly check: >50 upvotes on this prompt in last 10 min
       if (result.upvoted) {

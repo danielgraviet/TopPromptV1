@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
 import { router, publicProcedure, protectedProcedure } from '../trpc'
+import { inngest } from '../../inngest/client'
 import {
   getPromptFeed,
   getTrendingPrompts,
@@ -90,6 +91,8 @@ export const promptsRouter = router({
 
       revalidatePath('/')
       revalidatePath(`/category/${input.category}`)
+
+      await inngest.send({ name: 'prompt/published', data: { promptId: id, creatorId } })
 
       return { id }
     }),
