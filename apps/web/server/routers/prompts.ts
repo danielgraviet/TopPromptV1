@@ -1,3 +1,4 @@
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { nanoid } from 'nanoid'
 import { revalidatePath } from 'next/cache'
@@ -13,7 +14,7 @@ import {
   getPromptsByCreator,
   getCreatorById,
 } from '@toprompt/db/queries'
-import { db, prompts, promptTags, promptModels } from '@toprompt/db'
+import { db, prompts, promptTags, promptModels, eq } from '@toprompt/db'
 import { CATEGORY_SLUGS } from '../../lib/categories'
 
 const createPromptInput = z.object({
@@ -100,5 +101,44 @@ export const promptsRouter = router({
         .catch(() => null)
 
       return { id, slug }
+    }),
+
+  delete: protectedProcedure
+    .input(z.object({ promptId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const userId = ctx.user.id as string
+
+      const existingRows = await db
+        .select({
+          id: prompts.id,
+          slug: prompts.slug,
+          category: prompts.category,
+          creatorId: prompts.creatorId,
+        })
+        .from(prompts)
+        .where(eq(prompts.id, input.promptId))
+        .limit(1)
+
+      const prompt = existingRows[0]
+
+      if (!prompt) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: 'Prompt not found.' })
+      }
+
+      if (prompt.creatorId !== userId) {
+        throw new TRPCError({ code: 'FORBIDDEN', message: 'You can only delete your own prompts.' })
+      }
+
+      await db.delete(prompts).where(eq(prompts.id, input.promptId))
+
+      revalidatePath('/')
+      revalidatePath(`/prompt/${prompt.slug}`)
+      revalidatePath(`/category/${prompt.category}`)
+      revalidatePath(`/user/${userId}`)
+      revalidatePath('/leaderboard')
+      revalidatePath('/leaderboard/today')
+      revalidatePath('/leaderboard/alltime')
+
+      return { success: true }
     }),
 })

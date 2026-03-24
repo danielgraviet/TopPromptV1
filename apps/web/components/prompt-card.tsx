@@ -51,10 +51,6 @@ export function PromptCard({ prompt }: { prompt: PromptSummary }) {
       </h2>
       <p className="mb-4 text-sm text-zinc-400 line-clamp-2">{prompt.description}</p>
 
-      <p className="mb-4 text-xs uppercase tracking-[0.18em] text-zinc-500">
-        Setup prompt
-      </p>
-
       <div className="flex items-center justify-between">
         <div className="relative z-10 flex items-center gap-2">
           {prompt.creatorImage && (

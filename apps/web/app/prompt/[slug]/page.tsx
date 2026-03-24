@@ -9,6 +9,7 @@ import { UpvoteButton } from '@/components/upvote-button'
 import { SaveButton } from '@/components/save-button'
 import { CommentSection } from '@/components/comment-section'
 import { MarkdownPreview } from '@/components/markdown-preview'
+import { DeletePromptButton } from '@/components/delete-prompt-button'
 import { getCategoryBySlug } from '@/lib/categories'
 
 export const revalidate = 300
@@ -55,6 +56,7 @@ export default async function PromptPage({ params }: { params: { slug: string } 
   if (!prompt) notFound()
 
   const userId = session?.user?.id as string | undefined
+  const isOwner = userId === prompt.creatorId
   const category = getCategoryBySlug(prompt.category)
 
   const [initialComments, isUpvoted, isSaved] = await Promise.all([
@@ -128,6 +130,7 @@ export default async function PromptPage({ params }: { params: { slug: string } 
         <div className="ml-auto flex items-center gap-2">
           <UpvoteButton promptId={prompt.id} initialCount={prompt.upvoteCount} initialUpvoted={isUpvoted} size="lg" />
           <SaveButton promptId={prompt.id} initialCount={prompt.saveCount} initialSaved={isSaved} size="lg" />
+          {isOwner && <DeletePromptButton promptId={prompt.id} />}
         </div>
       </div>
 
