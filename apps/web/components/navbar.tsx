@@ -7,22 +7,34 @@ export async function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/80 backdrop-blur">
-      <nav className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-        <Link href="/" className="shrink-0 text-lg font-bold text-white">
-          TopPrompt
-        </Link>
+      <nav className="mx-auto flex min-h-14 max-w-7xl items-center gap-4 px-4 py-3">
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          <Link href="/" className="shrink-0 text-lg font-bold text-white">
+            TopPrompt
+          </Link>
 
-        <SearchBar />
+          <div className="hidden min-w-0 flex-1 md:block">
+            <SearchBar />
+          </div>
+        </div>
 
-        <div className="flex shrink-0 items-center gap-3">
-          <Link href="/leaderboard" className="hidden text-sm text-zinc-400 transition-colors hover:text-white sm:block">
+        <div className="ml-auto flex shrink-0 items-center gap-3">
+          <Link
+            href="/leaderboard"
+            className="hidden text-sm text-zinc-400 transition-colors hover:text-white md:block"
+          >
             Leaderboard
           </Link>
 
           {session?.user ? (
             <>
-              <Link href="/saved" className="hidden text-sm text-zinc-400 transition-colors hover:text-white sm:block">
-                Saved
+              <Link
+                href="/saved"
+                className="hidden rounded-lg border border-zinc-800 p-2 text-zinc-400 transition-colors hover:border-zinc-600 hover:text-white md:flex"
+                aria-label="Saved prompts"
+                title="Saved prompts"
+              >
+                <SaveIcon />
               </Link>
               <Link
                 href="/submit"
@@ -67,5 +79,18 @@ export async function Navbar() {
         </div>
       </nav>
     </header>
+  )
+}
+
+function SaveIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4 fill-none stroke-current stroke-2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
   )
 }

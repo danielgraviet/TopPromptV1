@@ -25,6 +25,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export function PromptCard({ prompt }: { prompt: PromptSummary }) {
   const categoryColor = CATEGORY_COLORS[prompt.category] ?? 'bg-zinc-800 text-zinc-300'
+  const creatorLabel = prompt.creatorName ?? prompt.creatorUsername ?? 'Anonymous'
   const { data: upvotedPromptIds = [] } = trpc.upvotes.byUser.useQuery(undefined, {
     staleTime: 60_000,
     retry: false,
@@ -60,7 +61,7 @@ export function PromptCard({ prompt }: { prompt: PromptSummary }) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={prompt.creatorImage}
-              alt={prompt.creatorName ?? 'Creator'}
+              alt={creatorLabel}
               className="h-5 w-5 rounded-full"
             />
           )}
@@ -68,7 +69,7 @@ export function PromptCard({ prompt }: { prompt: PromptSummary }) {
             href={`/user/${prompt.creatorId}`}
             className="text-xs text-zinc-500 hover:text-zinc-300"
           >
-            {prompt.creatorName ?? 'Anonymous'}
+            {creatorLabel}
           </Link>
         </div>
 
