@@ -10,8 +10,8 @@ export async function generateMetadata({ params }: { params: { category: string 
   const category = getCategoryBySlug(params.category)
   if (!category) return {}
   return {
-    title: `Best ${category.label} AI Prompts`,
-    description: `Discover community-ranked AI prompts for ${category.label.toLowerCase()}. ${category.description}`,
+    title: `${category.label} Prompts`,
+    description: `Discover reusable ${category.label} setup prompts. ${category.description}`,
     alternates: {
       canonical: `https://topprompt.io/category/${params.category}`,
     },

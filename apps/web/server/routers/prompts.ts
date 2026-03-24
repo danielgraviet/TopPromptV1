@@ -14,7 +14,7 @@ import {
   getCreatorById,
 } from '@toprompt/db/queries'
 import { db, prompts, promptTags, promptModels } from '@toprompt/db'
-import { CATEGORY_SLUGS, AI_MODELS } from '../../lib/categories'
+import { CATEGORY_SLUGS } from '../../lib/categories'
 
 const createPromptInput = z.object({
   title: z.string().min(5).max(120),
@@ -22,7 +22,7 @@ const createPromptInput = z.object({
   promptText: z.string().min(10).max(20000),
   category: z.enum(CATEGORY_SLUGS as unknown as [string, ...string[]]),
   tags: z.array(z.string().max(30)).max(10).default([]),
-  models: z.array(z.enum(AI_MODELS as unknown as [string, ...string[]])).default([]),
+  models: z.array(z.string().max(60)).max(10).default([]),
   sourceUrl: z.string().url().optional().or(z.literal('')),
 })
 
@@ -95,7 +95,9 @@ export const promptsRouter = router({
       revalidatePath('/')
       revalidatePath(`/category/${input.category}`)
 
-      await inngest.send({ name: 'prompt/published', data: { promptId: id, creatorId } })
+      void inngest
+        .send({ name: 'prompt/published', data: { promptId: id, creatorId } })
+        .catch(() => null)
 
       return { id, slug }
     }),

@@ -26,7 +26,7 @@ export function CopyButton({ text }: { text: string }) {
       ) : (
         <>
           <CopyIcon />
-          Copy to clipboard
+          Copy raw markdown
         </>
       )}
     </button>

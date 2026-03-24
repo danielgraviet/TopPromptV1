@@ -4,12 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { trpc } from '@/lib/trpc'
-import { CATEGORIES, AI_MODELS } from '@/lib/categories'
+import { CATEGORIES } from '@/lib/categories'
 
 export default function SubmitPage() {
   const router = useRouter()
-  const [tags, setTags] = useState('')
-  const [selectedModels, setSelectedModels] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const createPrompt = trpc.prompts.create.useMutation({
@@ -22,12 +20,6 @@ export default function SubmitPage() {
     },
   })
 
-  function toggleModel(model: string) {
-    setSelectedModels((prev) =>
-      prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
-    )
-  }
-
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -37,7 +29,6 @@ export default function SubmitPage() {
     const description = (fd.get('description') as string).trim()
     const promptText = (fd.get('promptText') as string).trim()
     const category = fd.get('category') as string
-    const sourceUrl = (fd.get('sourceUrl') as string).trim()
 
     if (title.length < 5) newErrors.title = 'Title must be at least 5 characters.'
     if (description.length < 10) newErrors.description = 'Description must be at least 10 characters.'
@@ -55,16 +46,19 @@ export default function SubmitPage() {
       description,
       promptText,
       category,
-      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-      models: selectedModels as never[],
-      sourceUrl: sourceUrl || undefined,
+      tags: [],
+      models: [],
+      sourceUrl: undefined,
     })
   }
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-2 text-2xl font-bold text-white">Submit a Prompt</h1>
-      <p className="mb-8 text-sm text-zinc-400">Share a prompt that&apos;s useful for developers.</p>
+      <h1 className="mb-2 text-2xl font-bold text-white">Submit a markdown prompt file</h1>
+      <p className="mb-8 text-sm text-zinc-400">
+        Share a reusable setup prompt for `agents.md`, `claude.md`, or another system-level prompt.
+        Paste the raw markdown exactly how you want people to use it.
+      </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         {/* Title */}
@@ -72,7 +66,7 @@ export default function SubmitPage() {
           <input
             name="title"
             type="text"
-            placeholder="e.g. Senior Engineer Code Review"
+            placeholder="e.g. Rails repo setup prompt for agents.md"
             className={inputCls(!!errors.title)}
           />
         </Field>
@@ -82,17 +76,22 @@ export default function SubmitPage() {
           <textarea
             name="description"
             rows={2}
-            placeholder="Brief description of what this prompt does"
+            placeholder="What this setup prompt is for and when to use it"
             className={inputCls(!!errors.description)}
           />
         </Field>
 
         {/* Prompt text */}
-        <Field label="Prompt text" error={errors.promptText} required>
+        <Field
+          label="Markdown"
+          hint="Raw markdown file contents"
+          error={errors.promptText}
+          required
+        >
           <textarea
             name="promptText"
-            rows={8}
-            placeholder="The full prompt text..."
+            rows={12}
+            placeholder={'# Role\nYou are...\n\n## Instructions\n- Inspect the codebase first\n- Ask clarifying questions only when blocked'}
             className={inputCls(!!errors.promptText)}
           />
         </Field>
@@ -109,56 +108,12 @@ export default function SubmitPage() {
           </select>
         </Field>
 
-        {/* Compatible models */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-zinc-300">
-            Compatible models <span className="text-zinc-500">(optional)</span>
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {AI_MODELS.map((model) => (
-              <button
-                key={model}
-                type="button"
-                onClick={() => toggleModel(model)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-                  selectedModels.includes(model)
-                    ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300'
-                    : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
-                }`}
-              >
-                {model}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tags */}
-        <Field label="Tags" hint="Comma-separated, e.g. code-review, typescript">
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="code-review, typescript, refactoring"
-            className={inputCls(false)}
-          />
-        </Field>
-
-        {/* Source URL */}
-        <Field label="Source URL" hint="Optional — where did this prompt come from?">
-          <input
-            name="sourceUrl"
-            type="url"
-            placeholder="https://..."
-            className={inputCls(false)}
-          />
-        </Field>
-
         <button
           type="submit"
           disabled={createPrompt.isPending}
           className="rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-indigo-500 disabled:opacity-50"
         >
-          {createPrompt.isPending ? 'Submitting…' : 'Submit prompt'}
+          {createPrompt.isPending ? 'Submitting…' : 'Submit markdown file'}
         </button>
       </form>
     </main>

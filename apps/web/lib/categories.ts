@@ -1,12 +1,22 @@
 export const CATEGORIES = [
-  { slug: 'coding',        label: 'Coding',                   description: 'Programming, code review, refactoring, and software development prompts.' },
-  { slug: 'architecture',  label: 'Architecture & Design',    description: 'System design, data modeling, and technical architecture prompts.' },
-  { slug: 'debugging',     label: 'Debugging',                description: 'Diagnosing errors, tracing bugs, and root cause analysis prompts.' },
-  { slug: 'devops',        label: 'DevOps & Infrastructure',  description: 'CI/CD, containers, cloud, and infrastructure automation prompts.' },
-  { slug: 'startup',       label: 'Startup & Product',        description: 'Product strategy, user research, and startup execution prompts.' },
-  { slug: 'writing',       label: 'Writing for Devs',         description: 'Docs, READMEs, specs, and technical writing prompts.' },
-  { slug: 'automation',    label: 'Automation & Scripting',   description: 'Scripting, workflow automation, and tooling prompts.' },
-  { slug: 'business',      label: 'Business & GTM',           description: 'Sales, marketing, pricing, and go-to-market prompts.' },
+  {
+    slug: 'agents-md',
+    label: 'agents.md',
+    description:
+      'Setup prompts and steering instructions meant to live in agents.md files for coding agents.',
+  },
+  {
+    slug: 'claude-md',
+    label: 'claude.md',
+    description:
+      'Claude-specific setup prompts, repo instructions, and reusable guidance for claude.md files.',
+  },
+  {
+    slug: 'system-prompts',
+    label: 'Other System Prompts',
+    description:
+      'Other system-level prompts, bootstrap instructions, and reusable steering context for AI tools.',
+  },
 ] as const
 
 export type CategorySlug = (typeof CATEGORIES)[number]['slug']
@@ -17,13 +27,6 @@ export function getCategoryBySlug(slug: string) {
   return CATEGORIES.find((c) => c.slug === slug) ?? null
 }
 
-export const AI_MODELS = [
-  'Claude 3.7',
-  'Claude 3.5 Sonnet',
-  'GPT-4o',
-  'o3',
-  'Gemini 2.0 Flash',
-  'Gemini 1.5 Pro',
-  'Llama 3.3',
-  'Deepseek R1',
-] as const
+export function getCategoryLabel(slug: string) {
+  return getCategoryBySlug(slug)?.label ?? slug
+}

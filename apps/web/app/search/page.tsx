@@ -16,13 +16,13 @@ export default async function SearchPage({
   return (
     <main className="mx-auto max-w-7xl px-4 py-10">
       <div className="mb-8 max-w-xl">
-        <h1 className="mb-4 text-2xl font-bold text-white">Search</h1>
+        <h1 className="mb-4 text-2xl font-bold text-white">Search prompt files</h1>
         <SearchBar defaultValue={query} />
       </div>
 
       {!query ? (
         <div>
-          <p className="mb-6 text-zinc-500">Browse by category:</p>
+          <p className="mb-6 text-zinc-500">Browse the launch categories:</p>
           <div className="flex flex-wrap gap-3">
             {CATEGORIES.map((cat) => (
               <Link

@@ -1,18 +1,16 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
-import { Inter } from 'next/font/google'
 import { Navbar } from '@/components/navbar'
 import { Providers } from '@/components/providers'
 
-const inter = Inter({ subsets: ['latin'], display: 'swap' })
-
 export const metadata: Metadata = {
   title: {
-    default: 'TopPrompt — The Developer Prompt Library',
+    default: 'TopPrompt — Prompt Files For AI Coding Tools',
     template: '%s — TopPrompt',
   },
-  description: 'Discover and share the best AI prompts for developers. Community-ranked prompts for Claude, GPT-4o, and more.',
+  description:
+    'Discover and upvote setup prompts for agents.md, claude.md, and other system-level prompt files.',
   metadataBase: new URL('https://topprompt.io'),
   openGraph: {
     siteName: 'TopPrompt',
@@ -25,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en">
       <body className="bg-zinc-950 text-white">
         <Providers>
           <Navbar />

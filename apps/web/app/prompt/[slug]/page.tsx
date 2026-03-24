@@ -8,6 +8,7 @@ import { CopyButton } from '@/components/copy-button'
 import { UpvoteButton } from '@/components/upvote-button'
 import { SaveButton } from '@/components/save-button'
 import { CommentSection } from '@/components/comment-section'
+import { MarkdownPreview } from '@/components/markdown-preview'
 import { getCategoryBySlug } from '@/lib/categories'
 
 export const revalidate = 300
@@ -157,12 +158,15 @@ export default async function PromptPage({ params }: { params: { slug: string } 
 
       <div className="mb-4 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900">
         <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-          <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">Prompt</span>
+          <div>
+            <span className="block text-xs font-medium uppercase tracking-wide text-zinc-500">
+              Markdown Prompt File
+            </span>
+            <span className="text-xs text-zinc-600">Preview below, raw markdown copied as-is</span>
+          </div>
           <CopyButton text={prompt.promptText} />
         </div>
-        <pre className="overflow-x-auto whitespace-pre-wrap p-6 text-sm leading-relaxed text-zinc-200">
-          {prompt.promptText}
-        </pre>
+        <MarkdownPreview markdown={prompt.promptText} />
       </div>
 
       <CommentSection

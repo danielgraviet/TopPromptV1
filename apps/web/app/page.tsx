@@ -7,8 +7,9 @@ import { getServerCaller } from '@/server/caller'
 export const revalidate = 300
 
 export const metadata: Metadata = {
-  title: 'TopPrompt — The Developer Prompt Library',
-  description: 'Discover and share the best AI prompts for developers. Community-ranked prompts for Claude, GPT-4o, and more.',
+  title: 'TopPrompt — Prompt Files For AI Coding Tools',
+  description:
+    'Discover and upvote setup prompts for agents.md, claude.md, and other system-level prompt files.',
   alternates: { canonical: 'https://topprompt.io' },
 }
 
@@ -27,13 +28,14 @@ export default async function HomePage({
   return (
     <main className="mx-auto max-w-7xl px-4 py-8">
       {/* Hero */}
-      <div className="mb-10 text-center">
+      <div className="mb-10 max-w-3xl">
         <h1 className="mb-3 text-4xl font-bold text-white">
-          The best AI prompts,{' '}
-          <span className="text-indigo-400">curated by developers</span>
+          Prompt files developers can actually
+          <span className="text-indigo-400"> drop into their AI workflow</span>
         </h1>
         <p className="text-zinc-400">
-          Discover, share, and save prompts for Claude, GPT-4o, and more.
+          TopPrompt is a small library of reusable setup prompts for `agents.md`, `claude.md`, and
+          other system-level instructions. Submit one, upvote the useful ones, and ship.
         </p>
       </div>
 
@@ -76,7 +78,7 @@ export default async function HomePage({
               : 'text-zinc-500 hover:text-zinc-300'
           }`}
         >
-          Trending
+          Top Voted
         </Link>
       </div>
 

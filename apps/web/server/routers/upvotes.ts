@@ -29,20 +29,22 @@ export const upvotesRouter = router({
 
       if (deleted.length > 0) {
         // Was upvoted → remove it
-        ;[updated] = await db
+        const rows = await db
           .update(prompts)
           .set({ upvoteCount: sql`greatest(${prompts.upvoteCount} - 1, 0)` })
           .where(eq(prompts.id, input.promptId))
           .returning()
+        updated = rows[0]
         upvoted = false
       } else {
         // Not upvoted → add it
         await db.insert(upvotes).values({ id: nanoid(), userId, promptId: input.promptId })
-        ;[updated] = await db
+        const rows = await db
           .update(prompts)
           .set({ upvoteCount: sql`${prompts.upvoteCount} + 1` })
           .where(eq(prompts.id, input.promptId))
           .returning()
+        updated = rows[0]
         upvoted = true
       }
 
@@ -59,7 +61,9 @@ export const upvotesRouter = router({
 
       // Emit event for Inngest (used by vote anomaly detection and analytics)
       if (result.upvoted) {
-        await inngest.send({ name: 'upvote/created', data: { promptId: input.promptId, userId } })
+        void inngest
+          .send({ name: 'upvote/created', data: { promptId: input.promptId, userId } })
+          .catch(() => null)
       }
 
       // Vote anomaly check: >50 upvotes on this prompt in last 10 min
@@ -77,8 +81,9 @@ export const upvotesRouter = router({
       return { upvoted: result.upvoted, count: result.count }
     }),
 
-  byUser: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.user.id as string
+  byUser: publicProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session?.user?.id as string | undefined
+    if (!userId) return []
     const rows = await db
       .select({ promptId: upvotes.promptId })
       .from(upvotes)

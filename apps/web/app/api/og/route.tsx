@@ -49,7 +49,7 @@ export async function GET(req: Request) {
           </div>
         )}
         <div style={{ color: '#52525b', fontSize: 18 }}>
-          topprompt.io — The developer's prompt library
+          topprompt.io | prompt files for AI coding tools
         </div>
       </div>
     ),

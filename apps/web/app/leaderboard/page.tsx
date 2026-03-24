@@ -7,7 +7,7 @@ export const revalidate = 300
 
 export const metadata: Metadata = {
   title: 'Leaderboard',
-  description: 'The top community-ranked AI prompts this week, scored by upvotes, saves, and engagement.',
+  description: 'The top community-ranked prompt files this week, ranked by votes and engagement.',
   alternates: { canonical: 'https://topprompt.io/leaderboard' },
 }
 
@@ -18,7 +18,7 @@ export default async function LeaderboardPage() {
     <main className="mx-auto max-w-7xl px-4 py-10">
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold text-white">Leaderboard</h1>
-        <p className="mb-6 text-zinc-400">Top prompts this week, ranked by community score.</p>
+        <p className="mb-6 text-zinc-400">Top prompt files this week, ranked by community score.</p>
 
         <div className="flex gap-3">
           <span className="rounded-full border border-indigo-500 bg-indigo-600/20 px-3 py-1 text-sm text-indigo-300">

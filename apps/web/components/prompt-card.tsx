@@ -2,6 +2,9 @@
 
 import Link from 'next/link'
 import type { PromptSummary } from '@toprompt/db/queries'
+import { UpvoteButton } from './upvote-button'
+import { trpc } from '@/lib/trpc'
+import { getCategoryLabel } from '@/lib/categories'
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000)
@@ -15,18 +18,18 @@ function timeAgo(date: Date): string {
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
-  coding:       'bg-blue-900/50 text-blue-300',
-  architecture: 'bg-purple-900/50 text-purple-300',
-  debugging:    'bg-red-900/50 text-red-300',
-  devops:       'bg-orange-900/50 text-orange-300',
-  startup:      'bg-green-900/50 text-green-300',
-  writing:      'bg-yellow-900/50 text-yellow-300',
-  automation:   'bg-cyan-900/50 text-cyan-300',
-  business:     'bg-pink-900/50 text-pink-300',
+  'agents-md': 'bg-sky-950/70 text-sky-300',
+  'claude-md': 'bg-amber-950/70 text-amber-300',
+  'system-prompts': 'bg-emerald-950/70 text-emerald-300',
 }
 
 export function PromptCard({ prompt }: { prompt: PromptSummary }) {
   const categoryColor = CATEGORY_COLORS[prompt.category] ?? 'bg-zinc-800 text-zinc-300'
+  const { data: upvotedPromptIds = [] } = trpc.upvotes.byUser.useQuery(undefined, {
+    staleTime: 60_000,
+    retry: false,
+  })
+  const initialUpvoted = upvotedPromptIds.includes(prompt.id)
 
   return (
     <article className="group relative rounded-xl border border-zinc-800 bg-zinc-900 p-5 transition-colors hover:border-zinc-600">
@@ -35,7 +38,7 @@ export function PromptCard({ prompt }: { prompt: PromptSummary }) {
 
       <div className="mb-3 flex items-start justify-between gap-3">
         <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${categoryColor}`}>
-          {prompt.category}
+          {getCategoryLabel(prompt.category)}
         </span>
         <span className="text-xs text-zinc-500" suppressHydrationWarning>
           {timeAgo(prompt.createdAt)}
@@ -47,20 +50,9 @@ export function PromptCard({ prompt }: { prompt: PromptSummary }) {
       </h2>
       <p className="mb-4 text-sm text-zinc-400 line-clamp-2">{prompt.description}</p>
 
-      {prompt.models.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          {prompt.models.slice(0, 3).map((model) => (
-            <span key={model} className="rounded-md bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400">
-              {model}
-            </span>
-          ))}
-          {prompt.models.length > 3 && (
-            <span className="rounded-md bg-zinc-800 px-2 py-0.5 text-xs text-zinc-500">
-              +{prompt.models.length - 3}
-            </span>
-          )}
-        </div>
-      )}
+      <p className="mb-4 text-xs uppercase tracking-[0.18em] text-zinc-500">
+        Setup prompt
+      </p>
 
       <div className="flex items-center justify-between">
         <div className="relative z-10 flex items-center gap-2">
@@ -80,33 +72,14 @@ export function PromptCard({ prompt }: { prompt: PromptSummary }) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3 text-xs text-zinc-500">
-          <span className="flex items-center gap-1">
-            <UpvoteIcon />
-            {prompt.upvoteCount.toLocaleString()}
-          </span>
-          <span className="flex items-center gap-1">
-            <SaveIcon />
-            {prompt.saveCount.toLocaleString()}
-          </span>
+        <div className="relative z-10">
+          <UpvoteButton
+            promptId={prompt.id}
+            initialCount={prompt.upvoteCount}
+            initialUpvoted={initialUpvoted}
+          />
         </div>
       </div>
     </article>
-  )
-}
-
-function UpvoteIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="18 15 12 9 6 15" />
-    </svg>
-  )
-}
-
-function SaveIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current stroke-2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-    </svg>
   )
 }

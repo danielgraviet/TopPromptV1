@@ -79,7 +79,7 @@ export async function getPromptFeed(limit = 20): Promise<PromptSummary[]> {
     .from(prompts)
     .leftJoin(users, eq(prompts.creatorId, users.id))
     .where(notFlagged)
-    .orderBy(desc(prompts.score))
+    .orderBy(desc(prompts.createdAt))
     .limit(limit)
   return withMeta(rows)
 }

@@ -22,14 +22,23 @@ export function UpvoteButton({
 
   const toggle = trpc.upvotes.toggle.useMutation({
     onMutate: () => {
-      // Optimistic update
-      setUpvoted((prev) => !prev)
-      setCount((prev) => (upvoted ? prev - 1 : prev + 1))
+      const previous = { upvoted, count }
+      const nextUpvoted = !previous.upvoted
+
+      setUpvoted(nextUpvoted)
+      setCount(previous.count + (nextUpvoted ? 1 : -1))
+
+      return previous
     },
-    onError: (err) => {
-      // Revert
-      setUpvoted((prev) => !prev)
-      setCount((prev) => (upvoted ? prev + 1 : prev - 1))
+    onSuccess: (result) => {
+      setUpvoted(result.upvoted)
+      setCount(result.count)
+    },
+    onError: (err, _input, context) => {
+      if (context) {
+        setUpvoted(context.upvoted)
+        setCount(context.count)
+      }
       if (err.data?.code === 'UNAUTHORIZED') {
         router.push('/login')
       } else {

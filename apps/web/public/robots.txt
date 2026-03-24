@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /saved
+Disallow: /submit
+Disallow: /login
+
+# Host
+Host: https://topprompt.io
+
+# Sitemaps
+Sitemap: https://topprompt.io/sitemap.xml
